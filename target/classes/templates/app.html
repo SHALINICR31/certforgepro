@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CertForge Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --gold:#D4A843;--gold2:#F5C842;--gold3:#8B6914;
+  --bg:#0C0C0E;--s1:#141416;--s2:#1C1C1F;--s3:#242428;--s4:#2E2E33;
+  --br:rgba(212,168,67,.15);--br2:rgba(255,255,255,.06);
+  --tx:#EEEAE2;--mu:#888;--mu2:#555;
+  --red:#E05555;--green:#4DC87A;--blue:#4D8EE0;--r:12px
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 10% 0%,rgba(212,168,67,.08) 0%,transparent 55%),radial-gradient(ellipse 40% 30% at 90% 100%,rgba(212,168,67,.05) 0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--s1)}::-webkit-scrollbar-thumb{background:var(--gold3);border-radius:4px}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:11px 28px;border-bottom:1px solid var(--br);backdrop-filter:blur(20px);background:rgba(12,12,14,.9)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold3));border-radius:7px;display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.logo-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;background:linear-gradient(120deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mu)}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.user-chip{display:flex;align-items:center;gap:7px;padding:5px 12px;background:var(--s2);border:1px solid var(--br2);border-radius:8px;font-size:12px}
+.user-av{width:22px;height:22px;background:linear-gradient(135deg,var(--gold),var(--gold3));border-radius:50%;display:grid;place-items:center;font-size:11px;color:#000;font-weight:700;flex-shrink:0}
+.hbtn{display:flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--br2);border-radius:8px;font-size:11.5px;cursor:pointer;background:var(--s2);font-family:'Inter',sans-serif;transition:all .2s}
+.hbtn.hist{color:var(--mu)}.hbtn.hist:hover{color:var(--tx);border-color:var(--br)}
+.hbtn.out{color:var(--red);border-color:rgba(224,85,85,.2)}.hbtn.out:hover{background:rgba(224,85,85,.08)}
+
+/* STEPS */
+.steps{display:flex;align-items:center;justify-content:center;padding:20px 0 0;gap:0;position:relative;z-index:10}
+.stp{display:flex;align-items:center;gap:7px;padding:5px 10px;border-radius:7px;cursor:pointer;transition:background .2s}
+.stp:hover{background:rgba(212,168,67,.05)}
+.sn{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--br);display:grid;place-items:center;font-size:10.5px;font-weight:600;color:var(--mu);transition:all .3s;flex-shrink:0}
+.sl{font-size:11px;color:var(--mu);font-weight:500;white-space:nowrap}
+.conn{width:28px;height:1px;background:var(--br);flex-shrink:0}
+.stp.active .sn{background:linear-gradient(135deg,var(--gold),var(--gold3));border-color:transparent;color:#000}
+.stp.active .sl{color:var(--gold)}
+.stp.done .sn{background:rgba(77,200,122,.12);border-color:var(--green);color:var(--green)}
+.stp.done .sl{color:var(--tx)}
+
+/* MAIN */
+main{position:relative;z-index:5;max-width:1020px;margin:24px auto;padding:0 16px}
+.panel{display:none;animation:up .25s ease}
+.panel.active{display:block}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.sh{margin-bottom:20px}
+.sh h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:3px}
+.sh p{color:var(--mu);font-size:12px}
+.gold{color:var(--gold)}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.ch{padding:10px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;background:rgba(212,168,67,.03)}
+.cb{padding:13px 14px}
+
+/* UPLOAD */
+.ugrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.uzone{background:var(--s1);border:2px dashed var(--br);border-radius:var(--r);min-height:148px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden;text-align:center;transition:all .2s}
+.uzone.drag-over{border-color:var(--gold);border-style:solid;background:rgba(212,168,67,.03)}
+.uzone.loaded{border-color:var(--green);border-style:solid}
+.uz-icon{font-size:24px;position:relative;z-index:1}
+.uz-title{font-weight:600;font-size:13px;position:relative;z-index:1}
+.uz-hint{font-size:10.5px;color:var(--mu);line-height:1.5;position:relative;z-index:1}
+.uz-ok{font-size:11px;color:var(--green);display:none;align-items:center;gap:4px;position:relative;z-index:1}
+.uzone.loaded .uz-ok{display:flex}.uzone.loaded .uz-hint{display:none}
+.file-wrap{position:relative;margin-top:4px;z-index:1}
+.file-wrap input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-fake{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:var(--s3);border:1px solid var(--br2);border-radius:7px;font-size:11px;font-weight:500;pointer-events:none}
+
+/* TABLE */
+.tw{overflow-x:auto;border-radius:var(--r);border:1px solid var(--br);margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{padding:8px 11px;text-align:left;font-weight:600;color:var(--gold);background:var(--s2);border-bottom:1px solid var(--br)}
+tbody tr{border-bottom:1px solid rgba(212,168,67,.04)}
+tbody tr:hover{background:var(--s2)}
+tbody td{padding:7px 11px;white-space:nowrap}
+
+/* FIELDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10.5px;color:var(--mu);font-weight:500}
+input[type=text],input[type=number],input[type=email],select,textarea{background:var(--s2);border:1px solid var(--br);border-radius:7px;padding:8px 10px;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--tx);outline:none;transition:border-color .2s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+input[type=color]{width:32px;height:26px;padding:2px;background:var(--s2);border:1px solid var(--br);border-radius:5px;cursor:pointer}
+select option{background:var(--s2)}
+textarea{resize:vertical;min-height:80px;line-height:1.6}
+textarea::placeholder{color:var(--mu2)}
+.field-err{border-color:rgba(224,85,85,.7)!important;box-shadow:0 0 0 2px rgba(224,85,85,.12)!important}
+
+/* CHIPS / TAGS */
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:flex;align-items:center;gap:5px;padding:3px 9px;background:var(--s2);border:1px solid var(--br);border-radius:6px;font-size:11px}
+.cdot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.vtag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.28);border-radius:4px;color:var(--gold);cursor:pointer;transition:background .15s;display:inline-block;margin-right:3px;margin-bottom:3px}
+.vtag:hover{background:rgba(212,168,67,.22)}
+.email-tag{display:inline-flex;padding:2px 8px;background:rgba(77,141,224,.1);border:1px solid rgba(77,141,224,.2);border-radius:10px;font-size:10.5px;color:var(--blue);font-family:'JetBrains Mono',monospace}
+.email-tag.bad{background:rgba(224,85,85,.08);border-color:rgba(224,85,85,.2);color:var(--red)}
+
+/* WORD COLOR */
+.wt-box{display:flex;flex-wrap:wrap;gap:5px;min-height:32px;align-items:flex-start;margin-bottom:9px}
+.wtok{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;border:1.5px solid var(--br2);cursor:pointer;transition:all .12s;font-size:11.5px;user-select:none}
+.wtok:hover{border-color:rgba(212,168,67,.45)}
+.wtok.sel{border-color:var(--gold);box-shadow:0 0 0 2px rgba(212,168,67,.15)}
+.tdot{width:6px;height:6px;border-radius:50%;border:1px solid rgba(255,255,255,.15);flex-shrink:0}
+.cpr{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cpr label{font-size:10.5px;color:var(--mu)}
+.palette{display:flex;gap:4px;flex-wrap:wrap}
+.sw{width:17px;height:17px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .12s}
+.sw:hover{transform:scale(1.3);border-color:rgba(255,255,255,.3)}
+.mbtn{padding:4px 10px;border-radius:5px;font-size:10.5px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;border:1px solid}
+.ma{background:rgba(212,168,67,.1);border-color:rgba(212,168,67,.28);color:var(--gold)}.ma:hover{background:rgba(212,168,67,.2)}
+.mr{background:rgba(224,85,85,.07);border-color:rgba(224,85,85,.2);color:var(--red)}.mr:hover{background:rgba(224,85,85,.16)}
+
+/* CANVAS */
+.cvw{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.cvl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--mu);margin-bottom:8px}
+.cvi{background:#fff;border-radius:5px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+#certCanvas{display:block;max-width:100%;height:auto}
+
+/* TOGGLE */
+.togrow{display:flex;align-items:center;gap:10px}
+.tog{width:36px;height:20px;background:var(--s4);border-radius:10px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;border:1px solid var(--br)}
+.tog.on{background:var(--gold3)}
+.tog::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.tog.on::after{left:18px}
+
+/* SEND MODE */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.mode-card{background:var(--s2);border:2px solid var(--br);border-radius:12px;padding:18px 16px;cursor:pointer;transition:all .2s;text-align:center;position:relative}
+.mode-card:hover{border-color:rgba(212,168,67,.4)}
+.mode-card.active{border-color:var(--gold);background:rgba(212,168,67,.06)}
+.mc-badge{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;border:2px solid var(--br);display:grid;place-items:center;font-size:10px;transition:all .2s}
+.mode-card.active .mc-badge{background:var(--gold);border-color:var(--gold);color:#000}
+.mc-icon{font-size:28px;margin-bottom:8px}
+.mc-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.mc-desc{font-size:11px;color:var(--mu);line-height:1.55}
+
+/* GENERATE */
+.gg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.gc{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);padding:14px}
+.gct{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mu);margin-bottom:10px;font-weight:600}
+.sr{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:7px}
+.sk{color:var(--mu)}.sv{font-weight:600;color:var(--gold)}.sv.ok{color:var(--green)}
+.pw{background:var(--s3);border-radius:100px;height:4px;overflow:hidden;margin-bottom:5px}
+.pb{height:100%;background:linear-gradient(90deg,var(--gold3),var(--gold),var(--gold2));border-radius:100px;width:0%;transition:width .15s}
+.pl{font-size:10.5px;color:var(--mu)}
+.clog{max-height:210px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;margin-top:8px}
+.li{display:flex;align-items:center;justify-content:space-between;padding:7px 11px;border-radius:8px;background:var(--s2);font-size:11.5px;gap:8px}
+.ln{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li-r{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.lb{font-size:9px;padding:2px 7px;border-radius:8px;white-space:nowrap}
+.lb.done{background:rgba(77,200,122,.12);color:var(--green)}
+.lb.mailed{background:rgba(77,141,224,.12);color:var(--blue)}
+.lb.pending{background:rgba(212,168,67,.1);color:var(--gold)}
+.lb.err{background:rgba(224,85,85,.12);color:var(--red)}
+.lb.skip{background:rgba(100,100,100,.15);color:var(--mu)}
+.sob{font-size:9px;padding:2px 8px;border-radius:5px;background:rgba(77,141,224,.1);color:var(--blue);border:1px solid rgba(77,141,224,.22);cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:background .15s;white-space:nowrap}
+.sob:hover:not(:disabled){background:rgba(77,141,224,.2)}
+.sob:disabled{opacity:.35;cursor:not-allowed}
+.sob.sent{background:rgba(77,200,122,.1);color:var(--green);border-color:rgba(77,200,122,.22)}
+
+/* DOWNLOAD */
+.dlg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.dlc{background:var(--s2);border:1px solid var(--br);border-radius:9px;padding:11px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.dlcn{font-size:10.5px;font-weight:500;word-break:break-all}
+.dlact{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.db{font-size:9.5px;padding:3px 8px;border-radius:5px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;border:1px solid}
+.db.dl{background:rgba(212,168,67,.1);color:var(--gold);border-color:rgba(212,168,67,.25)}.db.dl:hover{background:rgba(212,168,67,.2)}
+.db.re{background:rgba(77,141,224,.09);color:var(--blue);border-color:rgba(77,141,224,.22)}.db.re:hover{background:rgba(77,141,224,.18)}
+
+/* HISTORY DRAWER */
+.dover{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);display:none}
+.dover.open{display:flex;justify-content:flex-end;animation:fi .2s}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.drw{width:390px;max-width:96vw;background:var(--s1);border-left:1px solid var(--br);height:100vh;overflow-y:auto;display:flex;flex-direction:column;animation:si .22s ease}
+@keyframes si{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.drwh{padding:14px 18px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);z-index:10}
+.drwt{font-family:'Playfair Display',serif;font-size:17px;font-weight:700}
+.drwx{width:26px;height:26px;border-radius:6px;background:var(--s2);border:1px solid var(--br);color:var(--mu);cursor:pointer;display:grid;place-items:center;font-size:13px}.drwx:hover{color:var(--tx)}
+.drwb{padding:14px 18px;flex:1}
+.hemp{text-align:center;color:var(--mu);font-size:12px;padding:30px 0}
+.hses{background:var(--s2);border:1px solid var(--br);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.hsh{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}.hsh:hover{background:rgba(212,168,67,.04)}
+.hsi{display:flex;flex-direction:column;gap:1px}
+.hst{font-size:11.5px;font-weight:600}.hsm{font-size:10px;color:var(--mu)}
+.hsb{display:flex;gap:4px;align-items:center}
+.hb{font-size:9.5px;padding:2px 6px;border-radius:8px;background:rgba(212,168,67,.1);color:var(--gold)}
+.hb.em{background:rgba(77,141,224,.1);color:var(--blue)}
+.hcl{border-top:1px solid var(--br);padding:8px 10px;display:none;flex-direction:column;gap:3px}
+.hcl.open{display:flex}
+.hci{display:flex;justify-content:space-between;font-size:10.5px;padding:4px 6px;border-radius:5px;background:var(--s1)}
+.hcn{color:var(--tx)}.hcs{font-size:9.5px;color:var(--mu)}
+.hsact{display:flex;padding:7px 10px;border-top:1px solid var(--br)}
+.hdel{font-size:9.5px;padding:3px 9px;border-radius:5px;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid;background:rgba(224,85,85,.07);border-color:rgba(224,85,85,.2);color:var(--red)}.hdel:hover{background:rgba(224,85,85,.14)}
+.clhbtn{width:100%;margin-top:7px;padding:8px;background:rgba(224,85,85,.07);border:1px solid rgba(224,85,85,.17);border-radius:8px;color:var(--red);font-size:11.5px;cursor:pointer;font-family:'Inter',sans-serif}.clhbtn:hover{background:rgba(224,85,85,.13)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .18s}
+.bp{background:linear-gradient(135deg,var(--gold),var(--gold3));color:#000}.bp:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 14px rgba(212,168,67,.26)}
+.bs{background:var(--s2);color:var(--tx);border:1px solid var(--br2)}.bs:hover:not(:disabled){background:var(--s3)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.brow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.div{height:1px;background:var(--br);margin:14px 0}
+.note{font-size:11px;color:var(--mu);padding:8px 11px;background:rgba(212,168,67,.05);border:1px solid rgba(212,168,67,.12);border-radius:7px;line-height:1.65;margin-bottom:10px}
+.ibar{display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(212,168,67,.05);border:1px solid rgba(212,168,67,.12);border-radius:8px;font-size:11.5px;color:var(--mu);margin-bottom:12px}
+
+/* CONFIRM MODAL */
+.mbg{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+.mbg.open{display:flex;animation:fi .15s}
+.modal{background:var(--s1);border:1px solid var(--br);border-radius:16px;padding:28px 26px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.7)}
+.mtitle{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:5px}
+.msub{font-size:12.5px;color:var(--mu);margin-bottom:18px;line-height:1.6}
+.mstats{display:flex;gap:10px;margin-bottom:20px}
+.mstat{background:var(--s2);border:1px solid var(--br);border-radius:8px;padding:10px 14px;flex:1}
+.mstat-n{font-size:22px;font-weight:700;color:var(--gold)}
+.mstat-l{font-size:10px;color:var(--mu);margin-top:1px}
+.mbtns{display:flex;gap:8px;justify-content:flex-end}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;align-items:center;gap:7px;padding:10px 14px;background:var(--s2);border:1px solid var(--br);border-radius:10px;font-size:12.5px;box-shadow:0 5px 20px rgba(0,0,0,.5);transform:translateY(55px);opacity:0;transition:all .24s cubic-bezier(.34,1.56,.64,1);max-width:300px}
+#toast.show{transform:translateY(0);opacity:1}
+
+@media(max-width:640px){
+  header{padding:10px 12px}main{padding:0 10px}
+  .ugrid,.gg,.g2,.g3,.mode-grid{grid-template-columns:1fr}
+  .steps{padding:12px 0 0}.sl{display:none}.conn{width:10px}
+  .drw{width:100vw}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <div><div class="logo-name">CertForge Pro</div><div class="logo-sub">Certificate Generator</div></div>
+  </div>
+  <div class="hdr-r">
+    <div class="user-chip"><div class="user-av" id="userAv">U</div><span id="userName">User</span></div>
+    <div class="hbtn hist" onclick="openHistory()">🕐 History <span id="hcnt" style="color:var(--gold);margin-left:2px;font-weight:700"></span></div>
+    <div class="hbtn out" onclick="doLogout()">⎋ Logout</div>
+  </div>
+</header>
+
+<!-- ═══ STEPS ═══ -->
+<div class="steps">
+  <div class="stp active" id="n1" onclick="goStep(1)"><div class="sn">1</div><div class="sl">Upload</div></div><div class="conn"></div>
+  <div class="stp" id="n2" onclick="goStep(2)"><div class="sn">2</div><div class="sl">Content</div></div><div class="conn"></div>
+  <div class="stp" id="n3" onclick="goStep(3)"><div class="sn">3</div><div class="sl">Design</div></div><div class="conn"></div>
+  <div class="stp" id="n4" onclick="goStep(4)"><div class="sn">4</div><div class="sl">Email</div></div><div class="conn"></div>
+  <div class="stp" id="n5" onclick="goStep(5)"><div class="sn">5</div><div class="sl">Generate</div></div>
+</div>
+
+<main>
+
+<!-- ════════════ STEP 1: UPLOAD ════════════ -->
+<div class="panel active" id="p1">
+  <div class="sh"><h2>Upload Your <span class="gold">Files</span></h2><p>Drag & drop or click Choose File for each zone</p></div>
+  <div class="ugrid">
+    <div class="uzone" id="tzone" ondragover="dzo(event,'tzone')" ondragleave="dzl('tzone')" ondrop="dzd(event,'template')">
+      <span class="uz-icon">🖼️</span>
+      <div class="uz-title">Certificate Template</div>
+      <div class="uz-hint">PNG or JPG image<br>Drag here or click Choose File</div>
+      <div class="uz-ok" id="tok">✓ <span id="tfn"></span></div>
+      <div class="file-wrap"><div class="file-fake">📂 Choose File</div><input type="file" accept="image/*" onchange="fc(this,'template')"></div>
+    </div>
+    <div class="uzone" id="xzone" ondragover="dzo(event,'xzone')" ondragleave="dzl('xzone')" ondrop="dzd(event,'excel')">
+      <span class="uz-icon">📊</span>
+      <div class="uz-title">Excel / CSV Data</div>
+      <div class="uz-hint">.xlsx or .csv file<br>Drag here or click Choose File</div>
+      <div class="uz-ok" id="xok">✓ <span id="xfn"></span></div>
+      <div class="file-wrap"><div class="file-fake">📂 Choose File</div><input type="file" accept=".xlsx,.xls,.csv" onchange="fc(this,'excel')"></div>
+    </div>
+  </div>
+  <div class="ibar" id="colinf" style="display:none">ℹ️ Columns detected — use <code style="color:var(--gold);font-family:'JetBrains Mono',monospace">{{ColumnName}}</code> in certificate text</div>
+  <div class="card" id="colcard" style="display:none"><div class="ch">📌 Detected Columns</div><div class="cb"><div class="chips" id="colchips"></div></div></div>
+  <div class="tw" id="tw" style="display:none"><table><thead id="tth"></thead><tbody id="ttb"></tbody></table></div>
+  <div class="brow"><button class="btn bp" id="s1n" onclick="goStep(2)" disabled>Continue →</button></div>
+</div>
+
+<!-- ════════════ STEP 2: CONTENT ════════════ -->
+<div class="panel" id="p2">
+  <div class="sh"><h2>Certificate <span class="gold">Content</span></h2><p>Write text with <code style="color:var(--gold);font-family:'JetBrains Mono',monospace">{{variable}}</code> placeholders, then color individual words</p></div>
+
+  <!-- ★ ISSUER INFO — saved to DB, shown when QR code is scanned to verify -->
+  <div class="card" style="margin-bottom:10px">
+    <div class="ch">🏛️ Issuer &amp; Course <span style="color:var(--mu);font-weight:400;font-size:10.5px">— shown when someone scans the QR code</span></div>
+    <div class="cb">
+      <div class="g2">
+        <div class="fg">
+          <label class="fl">Issued By <span style="color:var(--red)">*</span> <span style="color:var(--mu);font-weight:400;font-size:10px">your college / organisation name</span></label>
+          <input type="text" id="issuedBy" placeholder="e.g. Anna University / ABC College" style="font-size:13px">
+        </div>
+        <div class="fg">
+          <label class="fl">Course / Programme Column <span style="color:var(--mu);font-weight:400;font-size:10px">from your Excel</span></label>
+          <select id="courseCol" style="padding:9px 10px;font-size:13px">
+            <option value="">— None / Not applicable —</option>
+          </select>
+        </div>
+      </div>
+      <div class="note" style="margin-bottom:0;margin-top:6px">📱 Verification shows: <strong style="color:var(--gold)">Issued by</strong> → your org &nbsp;|&nbsp; <strong style="color:var(--gold)">Issued to</strong> → recipient name &nbsp;|&nbsp; <strong style="color:var(--gold)">Course</strong> → if column selected</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><span>📝 Certificate Text</span><span style="font-size:10px;color:var(--mu)">Click a tag below to insert variable</span></div>
+    <div style="padding:7px 14px;border-bottom:1px solid var(--br);display:flex;flex-wrap:wrap" id="vtags"></div>
+    <textarea id="cc" placeholder="e.g. This certifies that {{Name}} has successfully completed {{Course}} on {{Date}}." rows="4" oninput="onCC()"></textarea>
+  </div>
+  <div class="card"><div class="ch">👁️ Live Preview — Row 1</div><div style="padding:11px 14px;font-size:12.5px;line-height:1.75" id="pv">Start typing above…</div></div>
+  <div class="card">
+    <div class="ch"><span>🎨 Word Color Styler</span><div style="display:flex;gap:5px"><button class="mbtn ma" onclick="applyColor()">✓ Apply</button><button class="mbtn mr" onclick="resetAll()">✗ Reset All</button></div></div>
+    <div class="cb">
+      <div style="font-size:10.5px;color:var(--mu2);margin-bottom:7px">Click words to select → pick color → Apply</div>
+      <div class="wt-box" id="wtoks"><span style="font-size:10.5px;color:var(--mu2)">Enter content above…</span></div>
+      <div class="cpr"><label>Color:</label><input type="color" id="wcp" value="#D4A843"><div class="palette" id="pal"></div><button class="mbtn ma" onclick="applyColor()">Apply</button><button class="mbtn mr" onclick="resetSel()">Reset Sel.</button></div>
+    </div>
+  </div>
+  <div class="brow"><button class="btn bs" onclick="goStep(1)">← Back</button><button class="btn bp" onclick="goStep(3)">Continue →</button></div>
+</div>
+
+<!-- ════════════ STEP 3: DESIGN ════════════ -->
+<div class="panel" id="p3">
+  <div class="sh"><h2>Text <span class="gold">Design</span></h2><p>Position and style the certificate text overlay</p></div>
+  <div class="g3">
+    <div class="fg"><label class="fl">X Position (%)</label><input type="number" id="tx" value="50" min="0" max="100" oninput="upv()"></div>
+    <div class="fg"><label class="fl">Y Position (%)</label><input type="number" id="ty" value="56" min="0" max="100" oninput="upv()"></div>
+    <div class="fg"><label class="fl">Font Size (px)</label><input type="number" id="fs" value="30" min="6" max="140" oninput="upv()"></div>
+    <div class="fg"><label class="fl">Font</label><select id="ff" onchange="upv()"><option value="Georgia,serif">Georgia</option><option value="'Times New Roman',serif">Times New Roman</option><option value="Arial,sans-serif">Arial</option><option value="Palatino,serif">Palatino</option><option value="'Trebuchet MS',sans-serif">Trebuchet MS</option><option value="'Courier New',monospace">Courier New</option></select></div>
+    <div class="fg"><label class="fl">Default Color</label><input type="color" id="tc" value="#1a1a1a" oninput="upv()"></div>
+    <div class="fg"><label class="fl">Alignment</label><select id="ta" onchange="upv()"><option value="center">Center</option><option value="left">Left</option><option value="right">Right</option></select></div>
+    <div class="fg"><label class="fl">Max Width (%)</label><input type="number" id="mw" value="80" min="10" max="100" oninput="upv()"></div>
+    <div class="fg"><label class="fl">Weight</label><select id="fw" onchange="upv()"><option value="normal">Normal</option><option value="bold">Bold</option></select></div>
+    <div class="fg"><label class="fl">Line Height</label><input type="number" id="lh" value="1.5" min="1" max="3" step="0.1" oninput="upv()"></div>
+  </div>
+  <div class="cvw"><div class="cvl">Canvas Preview — Row 1</div><div class="cvi"><canvas id="certCanvas"></canvas></div></div>
+  <div class="brow"><button class="btn bs" onclick="goStep(2)">← Back</button><button class="btn bp" onclick="goStep(4)">Continue →</button></div>
+</div>
+
+<!-- ════════════ STEP 4: EMAIL SETUP ════════════ -->
+<div class="panel" id="p4">
+  <div class="sh"><h2>Email <span class="gold">Setup</span></h2><p>All recipient addresses come from your Excel sheet — just pick the right column</p></div>
+
+  <!-- TOGGLE -->
+  <div class="card">
+    <div class="cb" style="padding:14px 16px">
+      <div class="togrow">
+        <div class="tog" id="etog" onclick="toggleEmail()"></div>
+        <div>
+          <div style="font-size:13px;font-weight:600" id="etog-t">Email delivery is OFF</div>
+          <div style="font-size:11.5px;color:var(--mu);margin-top:2px" id="etog-s">Toggle ON to configure and send certificates by email</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ecfg" style="display:none">
+
+    <!-- ① FROM -->
+    <div class="card">
+      <div class="ch"><span style="display:flex;align-items:center;gap:6px"><span>✉️</span><span>From — <span style="color:var(--mu);font-weight:400;font-size:10.5px">sender details recipients will see</span></span></span></div>
+      <div class="cb">
+        <div class="g2">
+          <div class="fg">
+            <label class="fl">Sender Name <span style="color:var(--red)">*</span></label>
+            <input type="text" id="efromname" placeholder="e.g. HR Department or Your Name" oninput="livePreview()">
+          </div>
+          <div class="fg">
+            <label class="fl">Sender Email Address <span style="color:var(--red)">*</span></label>
+            <input type="email" id="efromail" placeholder="e.g. hr@yourcompany.com" oninput="livePreview()">
+          </div>
+        </div>
+        <div class="note" style="margin-bottom:0">💡 Gmail sends from the server account (<code style="color:var(--gold)">application.properties</code>). Your <strong>Sender Name</strong> is shown and replies go to <strong>Sender Email</strong>.</div>
+      </div>
+    </div>
+
+    <!-- ② TO — from Excel -->
+    <div class="card">
+      <div class="ch"><span style="display:flex;align-items:center;gap:6px"><span>📬</span><span>To — <span style="color:var(--mu);font-weight:400;font-size:10.5px">recipient addresses read from your Excel sheet</span></span></span></div>
+      <div class="cb">
+        <div class="fg" style="margin-bottom:10px">
+          <label class="fl">Which Excel column contains the email addresses? <span style="color:var(--red)">*</span></label>
+          <select id="emcol" onchange="onColChange()" style="padding:9px 10px;font-size:13px"><option value="">— Select column —</option></select>
+        </div>
+        <div id="col-preview" style="display:none">
+          <div style="font-size:10.5px;color:var(--mu);margin-bottom:5px">Emails found in selected column (preview):</div>
+          <div id="col-chips" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ SUBJECT -->
+    <div class="card">
+      <div class="ch"><span style="display:flex;align-items:center;gap:6px"><span>📋</span><span>Subject <span style="color:var(--red)">*</span></span></span><span style="font-size:10px;color:var(--mu);font-weight:400">Supports {{variables}}</span></div>
+      <div class="cb" style="padding-bottom:10px">
+        <input type="text" id="esubj" value="Your Certificate is Ready 🎓" oninput="livePreview()" style="padding:9px 10px;font-size:13px">
+      </div>
+    </div>
+
+    <!-- ④ MESSAGE (optional) -->
+    <div class="card">
+      <div class="ch"><span style="display:flex;align-items:center;gap:6px"><span>💬</span><span>Message Body <span style="color:var(--mu);font-weight:400;font-size:10.5px">(optional — blank = warm default)</span></span></span></div>
+      <div class="cb">
+        <div style="font-size:10.5px;color:var(--mu);margin-bottom:5px">Insert variable into body:</div>
+        <div id="emvtags" style="margin-bottom:8px"></div>
+        <textarea id="ebody" placeholder="e.g. Dear {{Name}}, congratulations on completing {{Course}}! Your certificate is attached." oninput="livePreview()"></textarea>
+      </div>
+    </div>
+
+    <!-- EMAIL PREVIEW -->
+    <div class="card">
+      <div class="ch"><span>👁️ Live Email Preview</span><span style="font-size:10px;color:var(--mu);font-weight:400">Row 1 data</span></div>
+      <div style="font-size:12px;border-radius:0 0 12px 12px;overflow:hidden">
+        <div style="padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--br);display:grid;gap:6px">
+          <div style="display:flex;gap:12px"><span style="min-width:52px;color:var(--mu);font-size:10.5px">From</span><strong id="pv-from" style="color:var(--tx)">—</strong></div>
+          <div style="display:flex;gap:12px"><span style="min-width:52px;color:var(--mu);font-size:10.5px">To</span><span id="pv-to" style="color:var(--blue)">—</span></div>
+          <div style="display:flex;gap:12px"><span style="min-width:52px;color:var(--mu);font-size:10.5px">Subject</span><strong id="pv-subj">—</strong></div>
+        </div>
+        <div style="padding:13px 16px;line-height:1.75;white-space:pre-wrap;min-height:52px" id="pv-body">—</div>
+        <div style="padding:8px 16px;background:var(--s2);border-top:1px solid var(--br);font-size:10.5px;color:var(--mu)">📎 <span id="pv-file">Name_Certificate.png</span></div>
+      </div>
+    </div>
+
+  </div><!-- /ecfg -->
+
+  <div class="brow">
+    <button class="btn bs" onclick="goStep(3)">← Back</button>
+    <button class="btn bp" onclick="validateEmail()">Continue →</button>
+  </div>
+</div>
+
+<!-- ════════════ STEP 5: GENERATE ════════════ -->
+<div class="panel" id="p5">
+  <div class="sh"><h2>Generate <span class="gold">Certificates</span></h2><p>Choose how emails are sent, then generate</p></div>
+
+  <!-- SEND MODE — only shown when email is on -->
+  <div id="mode-section" style="display:none">
+    <div style="font-size:9px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">📧 Email Send Mode — choose one</div>
+    <div class="mode-grid">
+
+      <div class="mode-card active" id="mode-all" onclick="pickMode('all')">
+        <div class="mc-badge" id="badge-all">✓</div>
+        <div class="mc-icon">📨</div>
+        <div class="mc-title">Send to All</div>
+        <div class="mc-desc">Click Generate once — certificates are created and emailed to everyone automatically.</div>
+      </div>
+
+      <div class="mode-card" id="mode-one" onclick="pickMode('one')">
+        <div class="mc-badge" id="badge-one"></div>
+        <div class="mc-icon">🎯</div>
+        <div class="mc-title">Send One by One</div>
+        <div class="mc-desc">Certificates are generated first. Each row gets a <strong>Send</strong> button — you click it per person.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SUMMARY + PROGRESS -->
+  <div class="gg">
+    <div class="gc">
+      <div class="gct">Summary</div>
+      <div class="sr"><span class="sk">Recipients</span><span class="sv" id="st">0</span></div>
+      <div class="sr"><span class="sk">Template</span><span class="sv ok">✓ Loaded</span></div>
+      <div class="sr"><span class="sk">Variables</span><span class="sv" id="sv">0</span></div>
+      <div class="sr"><span class="sk">Colored Words</span><span class="sv" id="sc">0</span></div>
+      <div class="sr"><span class="sk">Email</span><span class="sv" id="semailstat">Off</span></div>
+      <div class="sr" style="flex-direction:column;align-items:flex-start;gap:4px;border-top:1px solid var(--br);padding-top:8px;margin-top:4px">
+        <span class="sk" style="color:var(--gold);font-size:10.5px">🏛️ ISSUED BY <span style="color:var(--red)">*</span> <span style="color:var(--mu);font-weight:400">shown on verify page</span></span>
+        <input type="text" id="issuedBy5" placeholder="e.g. Anna University — REQUIRED for verification"
+               style="font-size:12px;padding:6px 8px;width:100%;border:1px solid rgba(212,168,67,.4);background:rgba(212,168,67,.06)"
+               oninput="document.getElementById('issuedBy').value=this.value">
+      </div>
+    </div>
+    <div class="gc">
+      <div class="gct">Progress</div>
+      <div class="pw"><div class="pb" id="gpb"></div></div>
+      <div class="pl" id="gpl">Ready to generate</div>
+      <div style="margin-top:12px">
+        <button class="btn bp" id="genbtn" onclick="startGenerate()" style="width:100%;justify-content:center">🎓 Generate All Certificates</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div class="clog" id="clog"></div>
+
+  <!-- DOWNLOAD AREA -->
+  <div id="dlarea" style="display:none">
+    <div class="div"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700">✅ Complete!</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span id="email-stat-txt" style="font-size:11.5px;color:var(--mu)"></span>
+        <button class="btn bs" onclick="downloadAll()">⬇ Download All ZIP</button>
+      </div>
+    </div>
+    <div class="dlg" id="dlgrid"></div>
+  </div>
+
+  <div class="brow" style="margin-top:14px">
+    <button class="btn bs" onclick="goStep(4)">← Back</button>
+    <button class="btn bs" onclick="startOver()">🔄 New Batch</button>
+  </div>
+</div>
+
+</main>
+
+<!-- HISTORY DRAWER -->
+<div class="dover" id="hov" onclick="if(event.target===this)closeHistory()">
+  <div class="drw">
+    <div class="drwh"><div class="drwt">🕐 History</div><div class="drwx" onclick="closeHistory()">✕</div></div>
+    <div class="drwb" id="drwb"></div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL (Send-All) -->
+<div class="mbg" id="mmodal">
+  <div class="modal">
+    <div class="mtitle">📨 Confirm — Send to All</div>
+    <div class="msub" id="msub">Ready to generate and email all recipients?</div>
+    <div class="mstats">
+      <div class="mstat"><div class="mstat-n" id="m-total">0</div><div class="mstat-l">Certificates</div></div>
+      <div class="mstat"><div class="mstat-n" id="m-with">0</div><div class="mstat-l">Will be emailed</div></div>
+      <div class="mstat"><div class="mstat-n" id="m-skip">0</div><div class="mstat-l">No email (download only)</div></div>
+    </div>
+    <div class="mbtns">
+      <button class="btn bs" onclick="closeModal()">Cancel</button>
+      <button class="btn bp" onclick="confirmGo()">✓ Send All Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><span id="tmsg"></span></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let tplImg = null, xlData = [], xlCols = [], colorMap = {}, genCerts = [];
+let certSeq = 0; // auto-increments for cert numbers within a batch
+let emailOn = false, sendMode = 'all', step = 1;
+// BASE_URL: leave empty to use current domain automatically.
+// If deployed, this is auto-detected. For localhost it will be http://localhost:8080
+let BASE_URL = ''; // auto-detected from window.location.origin
+let TOKEN = localStorage.getItem('cf_token') || '';
+let USERINFO = JSON.parse(localStorage.getItem('cf_user') || '{}');
+const SWATCHES = ['#D4A843','#E05555','#4DC87A','#4D8EE0','#C04DE0','#E09A4D','#FFFFFF','#111111','#8B6914','#1D7B3B','#7B3FD4','#E0C04D'];
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  // Guard: no token → go to login immediately
+  if (!TOKEN) { window.location.replace('/login'); return; }
+
+  try {
+    const r = await api('GET', '/api/auth/me');
+    if (!r.ok) {
+      // Token invalid or expired — clear and redirect
+      localStorage.removeItem('cf_token');
+      localStorage.removeItem('cf_user');
+      window.location.replace('/login');
+      return;
+    }
+    USERINFO = await r.json();
+    localStorage.setItem('cf_user', JSON.stringify(USERINFO));
+  } catch(e) {
+    console.error('Auth check failed:', e);
+    // Network error — still try to use cached user info
+    if (!USERINFO.username) {
+      window.location.replace('/login');
+      return;
+    }
+  }
+
+  const name = USERINFO.fullName || USERINFO.username || 'User';
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userAv').textContent = (name[0] || 'U').toUpperCase();
+  buildPalette();
+  loadHistory();
+});
+
+function api(method, url, body = null) {
+  const opts = { method, headers: { Authorization: 'Bearer ' + TOKEN } };
+  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  return fetch(url, opts);
+}
+
+// ── XSS PROTECTION — always use this before inserting user data into HTML ──
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+function doLogout() {
+  localStorage.removeItem('cf_token');
+  localStorage.removeItem('cf_user');
+  location.href = '/login';
+}
+
+// ══════════════════════════════════════════════════
+// PALETTE
+// ══════════════════════════════════════════════════
+function buildPalette() {
+  const p = document.getElementById('pal');
+  SWATCHES.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'sw'; d.style.background = c; d.title = c;
+    d.onclick = () => { document.getElementById('wcp').value = c; applyColor(); };
+    p.appendChild(d);
+  });
+}
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+function goStep(n) {
+  if (n > step) {
+    if (n >= 2 && (!tplImg || !xlData.length)) { toast('⚠️ Upload template and Excel file first', true); return; }
+    if (n >= 3 && !document.getElementById('cc').value.trim()) { toast('⚠️ Enter certificate content first', true); return; }
+  }
+  // Sync issuedBy between Step 2 and Step 5
+  if (n === 5) {
+    const s2val = (document.getElementById('issuedBy') || {value:''}).value.trim();
+    const s5el = document.getElementById('issuedBy5');
+    if (s5el && !s5el.value && s2val) s5el.value = s2val;
+    else if (s5el && !s5el.value) s5el.focus(); // remind user to fill it
+  }
+  if (n === 2) {
+    const s5val = (document.getElementById('issuedBy5') || {value:''}).value.trim();
+    const s2el = document.getElementById('issuedBy');
+    if (s2el && s5val) s2el.value = s5val;
+  }
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('p' + n).classList.add('active');
+  document.querySelectorAll('.stp').forEach((s, i) => {
+    s.classList.remove('active', 'done');
+    if (i + 1 < n) s.classList.add('done');
+    else if (i + 1 === n) s.classList.add('active');
+  });
+  step = n;
+  if (n === 3) setTimeout(upv, 80);
+  if (n === 5) buildSummary();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════════
+// FILE UPLOAD
+// ══════════════════════════════════════════════════
+function dzo(e, id) { e.preventDefault(); document.getElementById(id).classList.add('drag-over'); }
+function dzl(id) { document.getElementById(id).classList.remove('drag-over'); }
+function dzd(e, type) {
+  e.preventDefault();
+  document.getElementById(type === 'template' ? 'tzone' : 'xzone').classList.remove('drag-over');
+  const f = e.dataTransfer.files[0]; if (!f) return;
+  type === 'template' ? loadTpl(f) : loadXl(f);
+}
+function fc(input, type) {
+  const f = input.files[0]; if (!f) return;
+  type === 'template' ? loadTpl(f) : loadXl(f);
+  input.value = '';
+}
+
+function loadTpl(file) {
+  if (!file.type.match(/image\/.*/)) { toast('❌ Select a PNG or JPG image', true); return; }
+  const r = new FileReader();
+  r.onerror = () => toast('❌ Could not read file', true);
+  r.onload = e => {
+    const img = new Image();
+    img.onerror = () => toast('❌ Invalid image', true);
+    img.onload = () => {
+      tplImg = img;
+      document.getElementById('tzone').classList.add('loaded');
+      document.getElementById('tok').style.display = 'flex';
+      document.getElementById('tfn').textContent = file.name;
+      checkRdy(); toast('🖼️ Template loaded!');
+    };
+    img.src = e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+function loadXl(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['xlsx', 'xls', 'csv'].includes(ext)) { toast('❌ Select .xlsx or .csv file', true); return; }
+  const r = new FileReader();
+  r.onerror = () => toast('❌ Could not read file', true);
+  r.onload = e => {
+    try {
+      const wb = ext === 'csv'
+        ? XLSX.read(new TextDecoder().decode(new Uint8Array(e.target.result)), { type: 'string' })
+        : XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (!rows.length || !rows[0].length) { toast('❌ File is empty', true); return; }
+      xlCols = rows[0].map(c => String(c).trim()).filter(Boolean);
+      xlData = rows.slice(1).filter(r => r.some(c => String(c).trim() !== '')).map(r => {
+        const o = {}; xlCols.forEach((col, i) => { o[col] = r[i] !== undefined ? String(r[i]) : ''; }); return o;
+      });
+      if (!xlData.length) { toast('❌ No data rows found', true); return; }
+      document.getElementById('xzone').classList.add('loaded');
+      document.getElementById('xok').style.display = 'flex';
+      document.getElementById('xfn').textContent = file.name;
+      renderCols(); renderTable(); buildVarTags(); buildEmailCol();
+      checkRdy(); toast(`📊 ${xlData.length} rows loaded!`);
+    } catch (err) { toast('❌ Parse error: ' + err.message, true); }
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function checkRdy() { document.getElementById('s1n').disabled = !(tplImg && xlData.length); }
+
+function renderCols() {
+  const c = document.getElementById('colchips'); c.innerHTML = '';
+  xlCols.forEach(col => { const d = document.createElement('div'); d.className = 'chip'; d.innerHTML = `<div class="cdot"></div><span>${escHtml(col)}</span>`; c.appendChild(d); });
+  document.getElementById('colcard').style.display = '';
+  document.getElementById('colinf').style.display = '';
+}
+
+function renderTable() {
+  document.getElementById('tth').innerHTML = '<tr>' + xlCols.map(c => `<th>${escHtml(c)}</th>`).join('') + '</tr>';
+  document.getElementById('ttb').innerHTML = xlData.slice(0, 5).map(r => '<tr>' + xlCols.map(c => `<td>${escHtml(r[c])}</td>`).join('') + '</tr>').join('');
+  document.getElementById('tw').style.display = '';
+}
+
+function buildVarTags() {
+  const t = document.getElementById('vtags'); t.innerHTML = '';
+  xlCols.forEach(col => {
+    const s = document.createElement('span'); s.className = 'vtag'; s.textContent = `{{${col}}}`;
+    s.onclick = () => insertVar(`{{${col}}}`); t.appendChild(s);
+  });
+  // ★ Populate Course column dropdown
+  const cc = document.getElementById('courseCol');
+  if (cc) {
+    const prev = cc.value;
+    cc.innerHTML = '<option value="">— None / Not applicable —</option>';
+    xlCols.forEach(col => {
+      const o = document.createElement('option');
+      o.value = col; o.textContent = col;
+      if (/course|programme|program|subject|module|training|workshop|skill/i.test(col)) o.selected = true;
+      cc.appendChild(o);
+    });
+    if (prev) cc.value = prev;
+  }
+}
+
+function buildEmailCol() {
+  const sel = document.getElementById('emcol');
+  sel.innerHTML = '<option value="">— Select column —</option>';
+  xlCols.forEach(col => {
+    const o = document.createElement('option'); o.value = col; o.textContent = col;
+    if (/e.?mail/i.test(col)) o.selected = true;
+    sel.appendChild(o);
+  });
+  // variable tags for email body
+  const et = document.getElementById('emvtags'); et.innerHTML = '';
+  xlCols.forEach(col => {
+    const s = document.createElement('span'); s.className = 'vtag'; s.textContent = `{{${col}}}`;
+    s.onclick = () => insertBodyVar(`{{${col}}}`); et.appendChild(s);
+  });
+  setTimeout(() => { onColChange(); livePreview(); }, 80);
+}
+
+function insertVar(v) {
+  const ta = document.getElementById('cc'); const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.value = ta.value.slice(0, s) + v + ta.value.slice(e); ta.focus(); ta.selectionStart = ta.selectionEnd = s + v.length; onCC();
+}
+function insertBodyVar(v) {
+  const ta = document.getElementById('ebody'); const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.value = ta.value.slice(0, s) + v + ta.value.slice(e); ta.focus(); ta.selectionStart = ta.selectionEnd = s + v.length; livePreview();
+}
+
+// ══════════════════════════════════════════════════
+// CONTENT + WORD COLOR
+// ══════════════════════════════════════════════════
+function onCC() { renderLivePreview(); buildTokens(); if (step === 3) upv(); }
+
+function renderLivePreview() {
+  const tpl = document.getElementById('cc').value, row = xlData[0] || {};
+  // SECURITY: escape the template text itself, then safely highlight variables
+  // This prevents XSS if Excel data contains <script> or other HTML
+  const safeTpl = escHtml(tpl);
+  const html = safeTpl.replace(/\{\{([\w ]+)\}\}/g, (match, k) => {
+    const v = row[k.trim()];
+    return v !== undefined
+      ? `<strong style="color:var(--gold)">${escHtml(String(v))}</strong>`
+      : `<span style="color:var(--red)">{{${escHtml(k)}}}</span>`;
+  });
+  document.getElementById('pv').innerHTML = html || '<span style="color:var(--mu2)">Start typing above…</span>';
+}
+
+function tk(seg) { return 'k_' + seg.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+function buildTokens() {
+  const raw = document.getElementById('cc').value, box = document.getElementById('wtoks'); box.innerHTML = '';
+  if (!raw.trim()) { box.innerHTML = '<span style="font-size:10.5px;color:var(--mu2)">Enter content above…</span>'; return; }
+  const rx = /(\{\{[\w ]+\}\}|[^\s]+)/g; let m;
+  while ((m = rx.exec(raw)) !== null) {
+    const seg = m[0], key = tk(seg), col = colorMap[key] || null;
+    const sp = document.createElement('span'); sp.className = 'wtok'; sp.dataset.key = key; sp.dataset.seg = seg;
+    if (col) { sp.style.background = col + '18'; sp.style.borderColor = col + '55'; }
+    const dot = document.createElement('span'); dot.className = 'tdot'; if (col) dot.style.background = col;
+    sp.appendChild(dot); sp.appendChild(document.createTextNode(seg.length > 20 ? seg.slice(0, 20) + '…' : seg));
+    sp.onclick = () => sp.classList.toggle('sel'); box.appendChild(sp);
+  }
+}
+
+function applyColor() {
+  const col = document.getElementById('wcp').value;
+  const sel = [...document.querySelectorAll('.wtok.sel')];
+  if (!sel.length) { toast('⚠️ Click words to select first', true); return; }
+  sel.forEach(s => { colorMap[s.dataset.key] = col; s.classList.remove('sel'); });
+  buildTokens(); if (step === 3) upv(); toast(`🎨 Applied to ${sel.length} word(s)`);
+}
+function resetSel() { [...document.querySelectorAll('.wtok.sel')].forEach(s => { delete colorMap[s.dataset.key]; s.classList.remove('sel'); }); buildTokens(); if (step === 3) upv(); }
+function resetAll() { colorMap = {}; buildTokens(); if (step === 3) upv(); toast('🔄 Colors reset'); }
+
+// ══════════════════════════════════════════════════
+// CANVAS
+// ══════════════════════════════════════════════════
+function upv() {
+  if (!tplImg) return;
+  const cv = document.getElementById('certCanvas'), ctx = cv.getContext('2d');
+  cv.width = tplImg.width; cv.height = tplImg.height;
+  ctx.drawImage(tplImg, 0, 0);
+  drawText(ctx, cv.width, cv.height, xlData[0] || {});
+  drawCertNumber(ctx, 'CERT-PREVIEW-0001', cv.width);
+  // QR not shown in preview to keep it fast
+}
+
+function drawText(ctx, W, H, row) {
+  const tpl = document.getElementById('cc').value;
+  const xp = parseFloat(document.getElementById('tx').value) / 100;
+  const yp = parseFloat(document.getElementById('ty').value) / 100;
+  const fsize = parseInt(document.getElementById('fs').value);
+  const ffam = document.getElementById('ff').value;
+  const dc = document.getElementById('tc').value;
+  const align = document.getElementById('ta').value;
+  const bold = document.getElementById('fw').value;
+  const mxw = parseFloat(document.getElementById('mw').value) / 100 * W;
+  const lhv = parseFloat(document.getElementById('lh').value);
+  ctx.textBaseline = 'middle';
+  const segs = resolveSegs(tpl, row, dc);
+  const lines = wrapSegs(ctx, segs, mxw, bold, fsize, ffam);
+  const totH = lines.length * fsize * lhv;
+  let y = yp * H - totH / 2 + (fsize * lhv) / 2;
+  const x = xp * W;
+
+  lines.forEach(ls => {
+    ctx.font = `${bold} ${fsize}px ${ffam}`;
+
+    // Measure total line width (used to compute the start x for each line)
+    let lw = 0;
+    ls.forEach(s => { ctx.font = `${bold} ${fsize}px ${ffam}`; lw += ctx.measureText(s.text).width; });
+
+    // startX: for center = center on x, for right = right-edge at x, for left = left-edge at x
+    let startX;
+    if (align === 'center')      startX = x - lw / 2;
+    else if (align === 'right')  startX = x - lw;
+    else                          startX = x;                // left — all lines start at same x
+
+    let cx = startX;
+    ls.forEach(s => {
+      ctx.font = `${bold} ${fsize}px ${ffam}`;
+      ctx.fillStyle = s.color;
+      ctx.fillText(s.text, cx, y);
+      cx += ctx.measureText(s.text).width;
+    });
+    y += fsize * lhv;
+  });
+}
+function resolveSegs(tpl, row, dc) {
+  const parts = []; const rx = /(\{\{[\w ]+\}\}|[^\s]+|\s+)/g; let m;
+  while ((m = rx.exec(tpl)) !== null) {
+    const seg = m[0];
+    if (/^\s+$/.test(seg)) { parts.push({ text: seg, color: dc }); continue; }
+    const vm = seg.match(/^\{\{([\w ]+)\}\}$/);
+    if (vm) { const key = vm[1].trim(), val = row[key] !== undefined ? row[key] : `{{${key}}}`, col = colorMap[tk(seg)] || dc; val.split(/(\s+)/).forEach(w => parts.push({ text: w, color: col })); }
+    else { parts.push({ text: seg, color: colorMap[tk(seg)] || dc }); }
+  }
+  return parts;
+}
+function wrapSegs(ctx, segs, mxw, bold, fsize, ffam) {
+  // "Pending space" approach: spaces are held until the next word is placed.
+  // This ensures:
+  //   1. No trailing spaces on any line (perfect centering)
+  //   2. No leading spaces on any line
+  //   3. Overflow checked against word width only, not word+space
+  const lines = [];
+  let cur = [], cw = 0;
+  let pendingSpace = null, pendingSpaceW = 0;
+
+  segs.forEach(seg => {
+    ctx.font = `${bold} ${fsize}px ${ffam}`;
+
+    if (/^\s+$/.test(seg.text)) {
+      // Hold this space; commit it only when the next word fits on this line
+      if (cur.length) { pendingSpace = seg; pendingSpaceW = ctx.measureText(seg.text).width; }
+      return;
+    }
+
+    const w = ctx.measureText(seg.text).width;
+
+    if (cur.length && cw + pendingSpaceW + w > mxw) {
+      // Word doesn't fit → push current line (no trailing space), start fresh
+      lines.push(cur);
+      cur = [seg]; cw = w;
+      pendingSpace = null; pendingSpaceW = 0;
+    } else {
+      // Word fits → commit pending space (if any), then add word
+      if (pendingSpace && cur.length) { cur.push(pendingSpace); cw += pendingSpaceW; }
+      cur.push(seg); cw += w;
+      pendingSpace = null; pendingSpaceW = 0;
+    }
+  });
+
+  if (cur.length) lines.push(cur);
+  return lines;
+}
+
+// ══════════════════════════════════════════════════
+// EMAIL STEP 4
+// ══════════════════════════════════════════════════
+function toggleEmail() {
+  emailOn = !emailOn;
+  document.getElementById('etog').classList.toggle('on', emailOn);
+  document.getElementById('etog-t').textContent = emailOn ? '✓ Email delivery is ON' : 'Email delivery is OFF';
+  document.getElementById('etog-t').style.color = emailOn ? 'var(--green)' : '';
+  document.getElementById('etog-s').textContent = emailOn ? 'Fill in the fields below, then continue' : 'Toggle ON to configure and send certificates by email';
+  document.getElementById('ecfg').style.display = emailOn ? '' : 'none';
+  if (emailOn) livePreview();
+}
+
+function onColChange() {
+  const col = document.getElementById('emcol').value;
+  const wrap = document.getElementById('col-preview');
+  const box = document.getElementById('col-chips');
+  if (!col || !xlData.length) { wrap.style.display = 'none'; livePreview(); return; }
+  wrap.style.display = ''; box.innerHTML = '';
+  xlData.slice(0, 10).forEach(row => {
+    const em = row[col] || '';
+    const c = document.createElement('span');
+    c.className = 'email-tag' + (em ? '' : ' bad');
+    c.textContent = em || '(empty)'; box.appendChild(c);
+  });
+  if (xlData.length > 10) { const m = document.createElement('span'); m.style.cssText = 'font-size:10px;color:var(--mu)'; m.textContent = `+${xlData.length - 10} more`; box.appendChild(m); }
+  livePreview();
+}
+
+function livePreview() {
+  if (!emailOn) return;
+  const row = xlData[0] || {};
+  const fn = document.getElementById('efromname').value.trim() || 'Your Name';
+  const fe = document.getElementById('efromail').value.trim() || 'you@example.com';
+  const col = document.getElementById('emcol').value;
+  const to = col ? (row[col] || '(no email in row 1)') : '(select column above)';
+  const subj = (document.getElementById('esubj').value || 'Your Certificate is Ready 🎓').replace(/\{\{([\w ]+)\}\}/g, (_, k) => row[k.trim()] || `{{${k}}}`);
+  const rawBody = document.getElementById('ebody').value;
+  const body = rawBody
+    ? rawBody.replace(/\{\{([\w ]+)\}\}/g, (_, k) => row[k.trim()] || `{{${k}}}`)
+    : `Dear ${row[xlCols[0]] || 'Recipient'},\n\nCongratulations! Please find your certificate attached.\n\nBest regards,\n${fn}`;
+  document.getElementById('pv-from').textContent = `${fn} <${fe}>`;
+  document.getElementById('pv-to').textContent = to;
+  document.getElementById('pv-subj').textContent = subj;
+  document.getElementById('pv-body').textContent = body;
+  document.getElementById('pv-file').textContent = `${(row[xlCols[0]] || 'Name').replace(/\s+/g, '_')}_Certificate.png`;
+}
+
+function validateEmail() {
+  if (!emailOn) { goStep(5); return; }
+  const fn = document.getElementById('efromname');
+  const fe = document.getElementById('efromail');
+  const col = document.getElementById('emcol');
+  const sub = document.getElementById('esubj');
+  let ok = true;
+  [fn, fe, col, sub].forEach(el => el.classList.remove('field-err'));
+  if (!fn.value.trim()) { fn.classList.add('field-err'); ok = false; }
+  if (!fe.value.trim() || !fe.value.includes('@')) { fe.classList.add('field-err'); ok = false; }
+  if (!col.value) { col.classList.add('field-err'); ok = false; }
+  if (!sub.value.trim()) { sub.classList.add('field-err'); ok = false; }
+  if (!ok) { toast('⚠️ Fill in all required fields (highlighted red)', true); return; }
+  goStep(5);
+}
+
+// ══════════════════════════════════════════════════
+// STEP 5 — SEND MODE + SUMMARY
+// ══════════════════════════════════════════════════
+function pickMode(m) {
+  sendMode = m;
+  document.getElementById('mode-all').classList.toggle('active', m === 'all');
+  document.getElementById('mode-one').classList.toggle('active', m === 'one');
+  document.getElementById('badge-all').textContent = m === 'all' ? '✓' : '';
+  document.getElementById('badge-one').textContent = m === 'one' ? '✓' : '';
+}
+
+function buildSummary() {
+  document.getElementById('st').textContent = xlData.length;
+  const c = document.getElementById('cc').value;
+  document.getElementById('sv').textContent = [...new Set((c.match(/\{\{[\w ]+\}\}/g) || []))].length;
+  document.getElementById('sc').textContent = Object.keys(colorMap).length;
+  const el = document.getElementById('semailstat');
+  if (emailOn) {
+    const label = sendMode === 'all' ? '✓ Send All (auto)' : '✓ Send One by One';
+    el.textContent = label; el.className = 'sv ok';
+  } else {
+    el.textContent = 'Off'; el.className = 'sv';
+  }
+  document.getElementById('mode-section').style.display = emailOn ? '' : 'none';
+}
+
+// ══════════════════════════════════════════════════
+// GENERATE FLOW
+// ══════════════════════════════════════════════════
+function getIssuedBy() {
+  // Read from Step 5 field first (visible just before generate), fallback to Step 2
+  const s5 = (document.getElementById('issuedBy5') || {value:''}).value.trim();
+  const s2 = (document.getElementById('issuedBy') || {value:''}).value.trim();
+  return s5 || s2;
+}
+
+function startGenerate() {
+  if (!tplImg || !xlData.length) { toast('❌ Missing template or data', true); return; }
+  if (emailOn && sendMode === 'all') {
+    // show confirm modal
+    const col = document.getElementById('emcol').value;
+    const withEmail = xlData.filter(r => col && (r[col] || '').includes('@')).length;
+    document.getElementById('m-total').textContent = xlData.length;
+    document.getElementById('m-with').textContent = withEmail;
+    document.getElementById('m-skip').textContent = xlData.length - withEmail;
+    document.getElementById('msub').textContent = `Generate ${xlData.length} certificate(s) and email ${withEmail} recipient(s). This cannot be undone.`;
+    document.getElementById('mmodal').classList.add('open');
+  } else {
+    doGenerate();
+  }
+}
+
+function closeModal() { document.getElementById('mmodal').classList.remove('open'); }
+function confirmGo() { closeModal(); doGenerate(); }
+
+async function doGenerate() {
+  genCerts = [];
+  certSeq = 0;
+  const btn = document.getElementById('genbtn'); btn.disabled = true;
+  document.getElementById('dlarea').style.display = 'none';
+  const log = document.getElementById('clog'); log.innerHTML = '';
+
+  const nc = xlCols[0];
+  const col = document.getElementById('emcol').value;
+  const subj = document.getElementById('esubj').value || 'Your Certificate is Ready 🎓';
+  const bodyTpl = document.getElementById('ebody').value;
+  const fromName = document.getElementById('efromname').value.trim() || 'CertForge Team';
+  const fromEmail = document.getElementById('efromail').value.trim() || '';
+  const doSendAll = emailOn && sendMode === 'all';
+  const doSendOne = emailOn && sendMode === 'one';
+
+  // Build rows in log
+  xlData.forEach((row, i) => {
+    const name = row[nc] || `Certificate ${i + 1}`;
+    const email = col ? (row[col] || '') : '';
+    const item = document.createElement('div'); item.className = 'li'; item.id = `li${i}`;
+    item.innerHTML = `
+      <span class="ln">🎓 ${escHtml(name)}</span>
+      <div class="li-r">
+        <span class="lb pending" id="lb${i}">Pending</span>
+        ${doSendOne && email
+          ? `<button class="sob" id="sob${i}" onclick="sendOne(${i})" disabled title="Send email to ${escHtml(email)}">📧 Send to ${escHtml(email)}</button>`
+          : ''}
+      </div>`;
+    log.appendChild(item);
+  });
+
+  const total = xlData.length;
+  const histItems = [];
+
+  for (let i = 0; i < total; i++) {
+    await new Promise(r => requestAnimationFrame(r));
+    const row = xlData[i];
+    const name = row[nc] || `Certificate_${i + 1}`;
+    const safe = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const email = col ? (row[col] || '') : '';
+    certSeq++;
+    const certNumber = genCertNumber(certSeq);
+    const dataURL = await renderCert(row, certNumber);
+    genCerts.push({ name: safe, display: name, email, dataURL, emailed: false, idx: i, certNumber });
+
+    let status = 'Generated ✓', cls = 'done', emailed = false, emailStatus = 'skipped';
+
+    if (doSendAll && email) {
+      try {
+        const body = bodyTpl.replace(/\{\{([\w ]+)\}\}/g, (_, k) => row[k.trim()] || '');
+        const res = await api('POST', '/api/certificates/send-email', {
+          toEmail: email, recipientName: name,
+          fromName, fromEmail,
+          subject: subj, bodyMessage: body,
+          certificateBase64: dataURL
+        });
+        const d = await res.json();
+        if (d.success) { status = '✓ Emailed to ' + email; cls = 'mailed'; emailed = true; emailStatus = 'sent'; genCerts[i].emailed = true; }
+        else { status = '✗ Email failed'; cls = 'err'; emailStatus = 'failed'; }
+      } catch { status = '✗ Email error'; cls = 'err'; emailStatus = 'failed'; }
+    } else if (doSendOne && email) {
+      status = 'Click Send →'; cls = 'done';
+      setTimeout(() => { const b = document.getElementById(`sob${i}`); if (b) b.disabled = false; }, 20);
+    } else if (doSendOne && !email) {
+      status = 'No email'; cls = 'skip';
+    }
+
+    // ★ include courseName from Excel row + issuedBy from UI input
+    const courseColVal = document.getElementById('courseCol') ? document.getElementById('courseCol').value : '';
+    const courseNameVal = courseColVal ? (row[courseColVal] || '') : '';
+    histItems.push({ name, email, emailed, emailStatus, certificateNumber: certNumber, courseName: courseNameVal });
+    document.getElementById(`lb${i}`).textContent = status;
+    document.getElementById(`lb${i}`).className = `lb ${cls}`;
+    // Show cert number in the log row
+    const liEl = document.getElementById(`li${i}`);
+    if (liEl) {
+      const lnEl = liEl.querySelector('.ln');
+      if (lnEl && !liEl.querySelector('.cert-num-tag')) {
+        const tag = document.createElement('span');
+        tag.className = 'cert-num-tag';
+        tag.style.cssText = 'font-size:9px;font-family:monospace;color:var(--gold);margin-left:6px;opacity:.8';
+        tag.textContent = certNumber;
+        lnEl.appendChild(tag);
+      }
+    }
+    const pct = Math.round((i + 1) / total * 100);
+    document.getElementById('gpb').style.width = pct + '%';
+    document.getElementById('gpl').textContent = `${i + 1} / ${total} (${pct}%)`;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // Save history to MongoDB (this makes verification work)
+  try {
+    const saveRes = await api('POST', '/api/certificates/save-history', {
+      sessionName: `Batch ${new Date().toLocaleDateString()}`,
+      totalCertificates: total,
+      emailSent: doSendAll,
+      emailedCount: histItems.filter(x => x.emailed).length,
+      contentTemplate: document.getElementById('cc').value,
+      issuedBy: getIssuedBy(),
+      certificates: histItems
+    });
+    if (!saveRes.ok) {
+      console.error('History save HTTP error:', saveRes.status);
+      toast('⚠️ Certificates generated but not saved to database — verify may not work', true);
+    } else {
+      console.log('✅ History saved — verification enabled');
+      loadHistory();
+    }
+  } catch (e) {
+    console.error('History save failed:', e);
+    toast('⚠️ Could not save to database. Check your MongoDB connection.', true);
+  }
+
+  buildDlGrid();
+  const emCount = histItems.filter(x => x.emailed).length;
+  if (doSendAll) document.getElementById('email-stat-txt').textContent = `📧 ${emCount} emailed · ${total - emCount} skipped`;
+  else if (doSendOne) document.getElementById('email-stat-txt').textContent = `Use the 📧 Send buttons above to send individually`;
+  document.getElementById('dlarea').style.display = '';
+  btn.disabled = false;
+  toast(doSendAll ? `✅ Done! ${emCount} of ${total} emailed` : `✅ ${total} certificates generated!`);
+}
+
+// Send one email (one-by-one mode)
+async function sendOne(i) {
+  const c = genCerts[i];
+  if (!c || !c.email) { toast('No email address', true); return; }
+  const btn = document.getElementById(`sob${i}`);
+  btn.disabled = true; btn.textContent = '⏳ Sending…';
+  const fromName = document.getElementById('efromname').value.trim() || 'CertForge Team';
+  const fromEmail = document.getElementById('efromail').value.trim() || '';
+  const bodyTpl = document.getElementById('ebody').value;
+  const row = xlData[i];
+  const body = bodyTpl.replace(/\{\{([\w ]+)\}\}/g, (_, k) => row[k.trim()] || '');
+  try {
+    const res = await api('POST', '/api/certificates/send-email', {
+      toEmail: c.email, recipientName: c.display,
+      fromName, fromEmail,
+      subject: document.getElementById('esubj').value,
+      bodyMessage: body, certificateBase64: c.dataURL
+    });
+    const d = await res.json();
+    if (d.success) {
+      btn.textContent = '✓ Sent'; btn.classList.add('sent');
+      document.getElementById(`lb${i}`).textContent = '✓ Emailed';
+      document.getElementById(`lb${i}`).className = 'lb mailed';
+      genCerts[i].emailed = true;
+      toast(`📧 Sent to ${c.email}`);
+    } else {
+      btn.textContent = '❌ Retry'; btn.disabled = false;
+      toast('❌ Email failed — check server config', true);
+    }
+  } catch {
+    btn.textContent = '❌ Retry'; btn.disabled = false;
+    toast('❌ Network error', true);
+  }
+}
+
+// ── Generate certificate number ──────────────────────────────────────
+function genCertNumber(seq) {
+  const now = new Date();
+  const ymd = now.getFullYear().toString() +
+    String(now.getMonth()+1).padStart(2,'0') +
+    String(now.getDate()).padStart(2,'0');
+  return 'CERT-' + ymd + '-' + String(seq).padStart(4,'0');
+}
+
+// ── Draw QR code onto canvas using qrcode.js ─────────────────────────
+async function drawQR(ctx, certNumber, W, H) {
+  // Use the BASE_URL setting (top of STATE section) so deployed apps work correctly
+  const verifyUrl = (BASE_URL || window.location.origin) + '/verify?cert=' + encodeURIComponent(certNumber);
+  return new Promise(resolve => {
+    const tmp = document.createElement('div');
+    tmp.style.cssText = 'position:absolute;left:-9999px;top:-9999px';
+    document.body.appendChild(tmp);
+    const qrSize = Math.round(Math.min(W, H) * 0.12); // 12% of shorter side
+    new QRCode(tmp, {
+      text: verifyUrl, width: qrSize, height: qrSize,
+      colorDark: '#1a1a1a', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    setTimeout(() => {
+      const canvas = tmp.querySelector('canvas');
+      if (canvas) {
+        const margin = Math.round(W * 0.02);
+        const qx = W - qrSize - margin;
+        const qy = H - qrSize - margin;
+        // White background for QR
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(qx - 4, qy - 4, qrSize + 8, qrSize + 8);
+        ctx.drawImage(canvas, qx, qy, qrSize, qrSize);
+        // Label under QR
+        ctx.fillStyle = '#333333';
+        ctx.font = `${Math.max(10, Math.round(W * 0.012))}px Arial,sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Scan to Verify', qx + qrSize/2, qy + qrSize + 14);
+        ctx.textAlign = 'left';
+      }
+      document.body.removeChild(tmp);
+      resolve();
+    }, 200);
+  });
+}
+
+// ── Draw cert number at top ───────────────────────────────────────────
+function drawCertNumber(ctx, certNumber, W) {
+  const fs = Math.max(11, Math.round(W * 0.015));
+  ctx.font = `600 ${fs}px 'Courier New',monospace`;
+  ctx.textBaseline = 'top';
+  // right-aligned in top area
+  const pad = Math.round(W * 0.02);
+  const textW = ctx.measureText('No. ' + certNumber).width;
+  const x = W - textW - pad;
+  const y = pad;
+  // semi-transparent background pill
+  ctx.fillStyle = 'rgba(255,255,255,0.82)';
+  const ph = fs + 8, pw = textW + 16;
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(x - 8, y - 4, pw, ph, 4) : ctx.rect(x - 8, y - 4, pw, ph);
+  ctx.fill();
+  // text
+  ctx.fillStyle = '#333333';
+  ctx.fillText('No. ' + certNumber, x, y);
+  ctx.textBaseline = 'middle';
+}
+
+async function renderCert(row, certNumber) {
+  const cv = document.createElement('canvas');
+  cv.width = tplImg.width; cv.height = tplImg.height;
+  const ctx = cv.getContext('2d');
+  ctx.drawImage(tplImg, 0, 0);
+  drawText(ctx, cv.width, cv.height, row);
+  drawCertNumber(ctx, certNumber, cv.width);
+  await drawQR(ctx, certNumber, cv.width, cv.height);
+  return cv.toDataURL('image/png');
+}
+
+function buildDlGrid() {
+  const g = document.getElementById('dlgrid'); g.innerHTML = '';
+  genCerts.forEach((c, i) => {
+    const d = document.createElement('div'); d.className = 'dlc';
+    d.innerHTML = `
+      <div style="font-size:22px">🎓</div>
+      <div class="dlcn">${escHtml(c.display)}</div>
+      <div style="font-size:9px;font-family:monospace;color:var(--gold);margin:2px 0 4px;text-align:center">${escHtml(c.certNumber || '')}</div>
+      <div class="dlact">
+        <div class="db dl" onclick="dlOne(${i})">⬇ Save</div>
+        <div class="db" style="background:rgba(77,200,122,.08);color:var(--green);border-color:rgba(77,200,122,.2);font-size:9px;padding:3px 7px;border-radius:5px;cursor:pointer" onclick="window.open('/verify?cert=${encodeURIComponent(c.certNumber||'')}','_blank')">🔍 Verify</div>
+        ${c.email ? `<div class="db re" onclick="resendEmail(${i})">📧 Resend</div>` : ''}
+      </div>`;
+    g.appendChild(d);
+  });
+}
+
+function dlOne(i) { const a = document.createElement('a'); a.href = genCerts[i].dataURL; a.download = genCerts[i].name + '.png'; a.click(); }
+
+async function downloadAll() {
+  if (!genCerts.length) return;
+  const zip = new JSZip();
+  genCerts.forEach(c => zip.file(c.name + '.png', c.dataURL.split(',')[1], { base64: true }));
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'certificates.zip'; a.click();
+  toast('📦 ZIP downloaded!');
+}
+
+async function resendEmail(i) {
+  const c = genCerts[i]; if (!c.email) { toast('No email address', true); return; }
+  const fromName = document.getElementById('efromname').value.trim() || 'CertForge Team';
+  const fromEmail = document.getElementById('efromail').value.trim() || '';
+  try {
+    const res = await api('POST', '/api/certificates/send-email', {
+      toEmail: c.email, recipientName: c.display,
+      fromName, fromEmail,
+      subject: document.getElementById('esubj').value,
+      bodyMessage: document.getElementById('ebody').value,
+      certificateBase64: c.dataURL
+    });
+    const d = await res.json();
+    toast(d.success ? `📧 Resent to ${c.email}` : '❌ Email failed', !d.success);
+  } catch { toast('❌ Network error', true); }
+}
+
+// ══════════════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════════════
+let historyData = [];
+
+async function loadHistory() {
+  try {
+    const r = await api('GET', '/api/certificates/history');
+    if (r.ok) { historyData = await r.json(); updateHCount(); renderHistory(); }
+  } catch { }
+}
+
+function updateHCount() { document.getElementById('hcnt').textContent = historyData.length ? `(${historyData.length})` : ''; }
+
+function renderHistory() {
+  const body = document.getElementById('drwb');
+  if (!historyData.length) { body.innerHTML = '<div class="hemp">No history yet.<br>Generate certificates to see sessions here.</div>'; return; }
+  body.innerHTML = '';
+  historyData.forEach((sess, i) => {
+    const em = sess.emailedCount || 0;
+    const date = new Date(sess.createdAt).toLocaleString();
+    const div = document.createElement('div'); div.className = 'hses';
+    div.innerHTML = `
+      <div class="hsh" onclick="togH(${i})">
+        <div class="hsi"><div class="hst">${escHtml(sess.sessionName || date)}</div><div class="hsm">${escHtml(date)} · ${sess.totalCertificates} certs</div></div>
+        <div class="hsb"><span class="hb">${sess.totalCertificates}</span>${em ? `<span class="hb em">📧 ${em}</span>` : ''}<span style="color:var(--mu);font-size:12px">›</span></div>
+      </div>
+      <div class="hcl" id="hcl${i}">
+        ${(sess.certificates || []).map(x => `<div class="hci"><span class="hcn">🎓 ${escHtml(x.recipientName)}</span><span class="hcs">${x.recipientEmail ? (x.emailed ? '📧 Emailed' : escHtml(x.recipientEmail)) : 'No email'}</span></div>`).join('')}
+      </div>
+      <div class="hsact"><button class="hdel" onclick="delSess('${escHtml(sess.id)}',event)">🗑️ Delete</button></div>`;
+    body.appendChild(div);
+  });
+  const cb = document.createElement('button'); cb.className = 'clhbtn'; cb.textContent = '🗑️ Clear All History'; cb.onclick = clearAll; body.appendChild(cb);
+}
+
+function togH(i) { document.getElementById(`hcl${i}`).classList.toggle('open'); }
+
+async function delSess(id, e) {
+  e.stopPropagation();
+  try { await api('DELETE', `/api/certificates/history/${id}`); await loadHistory(); toast('🗑️ Deleted'); } catch { toast('❌ Delete failed', true); }
+}
+
+async function clearAll() {
+  if (!confirm('Clear all history? This cannot be undone.')) return;
+  try { await api('DELETE', '/api/certificates/history'); historyData = []; updateHCount(); renderHistory(); toast('🗑️ History cleared'); } catch { toast('❌ Failed', true); }
+}
+
+function openHistory() { document.getElementById('hov').classList.add('open'); renderHistory(); }
+function closeHistory() { document.getElementById('hov').classList.remove('open'); }
+
+// ══════════════════════════════════════════════════
+// MISC
+// ══════════════════════════════════════════════════
+function startOver() {
+  if (!confirm('Reset all current work and start fresh?')) return;
+  tplImg = null; xlData = []; xlCols = []; colorMap = {}; genCerts = []; certSeq = 0; emailOn = false; sendMode = 'all';
+  ['tzone', 'xzone'].forEach(id => document.getElementById(id).classList.remove('loaded'));
+  ['tok', 'xok'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('cc').value = '';
+  ['colcard', 'tw', 'colinf'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('s1n').disabled = true;
+  document.getElementById('gpb').style.width = '0';
+  document.getElementById('gpl').textContent = 'Ready to generate';
+  document.getElementById('clog').innerHTML = '';
+  document.getElementById('dlarea').style.display = 'none';
+  document.getElementById('etog').classList.remove('on');
+  document.getElementById('ecfg').style.display = 'none';
+  document.getElementById('etog-t').textContent = 'Email delivery is OFF';
+  document.getElementById('etog-t').style.color = '';
+  pickMode('all');
+  goStep(1); toast('🔄 Reset!');
+}
+
+let _tt;
+function toast(msg, err = false) {
+  const el = document.getElementById('toast');
+  document.getElementById('tmsg').textContent = msg;
+  el.style.borderColor = err ? 'rgba(224,85,85,.4)' : 'rgba(212,168,67,.35)';
+  el.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 3200);
+}
+</script>
+</body>
+</html>

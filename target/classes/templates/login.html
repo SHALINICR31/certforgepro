@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CertForge Pro — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#D4A843;--gold2:#F5C842;--gold3:#8B6914;--bg:#0C0C0E;--s1:#141416;--s2:#1C1C1F;--br:rgba(212,168,67,.18);--tx:#EEEAE2;--mu:#777;--red:#E05555;--green:#4DC87A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 55% 45% at 15% 10%,rgba(212,168,67,.12) 0%,transparent 55%),radial-gradient(ellipse 40% 35% at 88% 90%,rgba(212,168,67,.08) 0%,transparent 55%);pointer-events:none}
+.card{position:relative;z-index:10;background:var(--s1);border:1px solid var(--br);border-radius:20px;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,.6);animation:up .5s ease}
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.logo{text-align:center;margin-bottom:32px}
+.logo-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--gold),var(--gold3));border-radius:16px;display:inline-grid;place-items:center;font-size:28px;margin-bottom:14px;box-shadow:0 8px 24px rgba(212,168,67,.3)}
+.logo-name{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;background:linear-gradient(120deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;margin-bottom:4px}
+.logo-sub{font-size:11px;color:var(--mu);letter-spacing:2px;text-transform:uppercase}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11.5px;color:var(--mu);font-weight:500;margin-bottom:6px}
+.field input{width:100%;background:var(--s2);border:1.5px solid rgba(212,168,67,.15);border-radius:10px;padding:12px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--tx);outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,.1)}
+.field input.bad{border-color:rgba(224,85,85,.6)!important}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:44px}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--mu);cursor:pointer;font-size:17px;line-height:1}
+.err-box{display:none;align-items:center;gap:8px;padding:10px 14px;background:rgba(224,85,85,.1);border:1px solid rgba(224,85,85,.25);border-radius:8px;color:var(--red);font-size:12.5px;margin-bottom:14px}
+.err-box.show{display:flex}
+.ok-box{display:none;align-items:center;gap:8px;padding:10px 14px;background:rgba(77,200,122,.08);border:1px solid rgba(77,200,122,.25);border-radius:8px;color:var(--green);font-size:12.5px;margin-bottom:14px}
+.ok-box.show{display:flex}
+.divider{height:1px;background:var(--br);margin:18px 0;position:relative}
+.divider::before{content:'Secure Login';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--s1);padding:0 10px;font-size:10px;color:var(--mu);letter-spacing:1.5px;text-transform:uppercase}
+.sbtn{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold),var(--gold3));color:#000;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.sbtn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,168,67,.35)}
+.sbtn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.spin{width:16px;height:16px;border:2.5px solid rgba(0,0,0,.25);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sbtn.loading .spin{display:block}
+.foot{margin-top:22px;padding:12px 14px;background:rgba(212,168,67,.04);border:1px solid rgba(212,168,67,.1);border-radius:8px;font-size:11px;color:var(--mu);text-align:center;line-height:1.7}
+.foot strong{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <span class="logo-name">CertForge Pro</span>
+    <span class="logo-sub">Certificate Generator</span>
+  </div>
+
+  <div class="err-box" id="errBox"><span>⚠️</span><span id="errMsg"></span></div>
+  <div class="ok-box" id="okBox"><span>✓</span><span>Login successful! Redirecting…</span></div>
+
+  <div class="field">
+    <label>Username</label>
+    <input type="text" id="uname" placeholder="Enter username" autocomplete="username" autofocus>
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <div class="pw-wrap">
+      <input type="password" id="pw" placeholder="Enter password" autocomplete="current-password">
+      <button class="eye" type="button" onclick="toggleEye()" id="eyeBtn">👁️</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="sbtn" id="sbtn" onclick="doLogin()">
+    <span class="spin" id="spin"></span>
+    <span id="btnLabel">Sign In →</span>
+  </button>
+
+  <div class="foot">
+    🔒 Default credentials:<br>
+     <strong>Managed By Developer</strong>
+  </div>
+</div>
+
+<script>
+// Clear any stale session data when landing on login page
+localStorage.removeItem('cf_token');
+localStorage.removeItem('cf_user');
+
+// Allow Enter key
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function toggleEye() {
+  const pw = document.getElementById('pw');
+  pw.type = pw.type === 'password' ? 'text' : 'password';
+  document.getElementById('eyeBtn').textContent = pw.type === 'password' ? '👁️' : '🙈';
+}
+
+async function doLogin() {
+  const username = document.getElementById('uname').value.trim();
+  const password = document.getElementById('pw').value;
+
+  // Reset state
+  clearErr();
+  document.getElementById('uname').classList.remove('bad');
+  document.getElementById('pw').classList.remove('bad');
+
+  // Validate
+  if (!username) {
+    showErr('Please enter your username.');
+    document.getElementById('uname').classList.add('bad');
+    document.getElementById('uname').focus();
+    return;
+  }
+  if (!password) {
+    showErr('Please enter your password.');
+    document.getElementById('pw').classList.add('bad');
+    document.getElementById('pw').focus();
+    return;
+  }
+
+  // Set loading state
+  const btn = document.getElementById('sbtn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  document.getElementById('btnLabel').textContent = 'Signing in…';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    let data;
+    try { data = await res.json(); } catch { data = {}; }
+
+    if (res.ok && data.token) {
+      // Save to localStorage
+      localStorage.setItem('cf_token', data.token);
+      localStorage.setItem('cf_user', JSON.stringify({
+        username:  data.username  || username,
+        fullName:  data.fullName  || username,
+        email:     data.email     || ''
+      }));
+      // Show success, then redirect
+      document.getElementById('okBox').classList.add('show');
+      setTimeout(() => { window.location.href = '/app'; }, 800);
+
+    } else {
+      const msg = data.error || 'Invalid username or password. Please try again.';
+      showErr(msg);
+      document.getElementById('uname').classList.add('bad');
+      document.getElementById('pw').classList.add('bad');
+      document.getElementById('pw').select();
+    }
+
+  } catch (err) {
+    showErr('Cannot connect to server. Make sure the app is still running.');
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    document.getElementById('btnLabel').textContent = 'Sign In →';
+  }
+}
+
+function showErr(msg) {
+  document.getElementById('errMsg').textContent = msg;
+  document.getElementById('errBox').classList.add('show');
+}
+function clearErr() {
+  document.getElementById('errBox').classList.remove('show');
+  document.getElementById('okBox').classList.remove('show');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Certificate — CertForge Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#D4A843;--gold2:#F5C842;--gold3:#8B6914;
+  --bg:#0C0C0E;--s1:#141416;--s2:#1C1C1F;
+  --br:rgba(212,168,67,.15);--brg:rgba(212,168,67,.3);
+  --tx:#EEEAE2;--mu:#888;
+  --green:#4DC87A;--dgreen:#1a5c30;
+  --red:#E05555;--blue:#4D8EE0
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -5%,rgba(212,168,67,.07) 0%,transparent 60%);pointer-events:none}
+.wrap{width:100%;max-width:560px;position:relative;z-index:1}
+
+/* ── Logo ── */
+.logo{text-align:center;margin-bottom:24px}
+.logo-icon{width:50px;height:50px;background:linear-gradient(135deg,var(--gold),var(--gold3));border-radius:13px;display:inline-flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:8px;box-shadow:0 4px 18px rgba(212,168,67,.25)}
+.logo-name{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;background:linear-gradient(120deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);margin-top:2px}
+
+/* ── Input card ── */
+.card{background:var(--s1);border:1px solid var(--br);border-radius:16px;padding:22px 20px;margin-bottom:12px}
+.card-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin-bottom:3px}
+.card-sub{font-size:11.5px;color:var(--mu);margin-bottom:16px}
+.inp-row{display:flex;gap:8px}
+input[type=text]{flex:1;background:var(--s2);border:1px solid var(--br);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--tx);outline:none;transition:border-color .2s;text-transform:uppercase;letter-spacing:.5px}
+input:focus{border-color:var(--gold)}
+.btn{padding:10px 18px;background:linear-gradient(135deg,var(--gold),var(--gold3));color:#000;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .18s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(212,168,67,.3)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ── Loading ── */
+.loading{display:none;text-align:center;padding:20px;color:var(--mu);font-size:12.5px}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid var(--br);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── RESULT VALID ── */
+.res-valid{display:none;margin-top:16px;border-radius:14px;overflow:hidden;border:1px solid rgba(77,200,122,.25);background:rgba(77,200,122,.04)}
+.res-banner{background:linear-gradient(135deg,rgba(77,200,122,.14),rgba(77,200,122,.06));padding:18px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(77,200,122,.15)}
+.res-check{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4DC87A,#2a9a56);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 4px 12px rgba(77,200,122,.3)}
+.res-banner-title{font-size:15px;font-weight:700;color:#4DC87A}
+.res-banner-sub{font-size:11.5px;color:rgba(77,200,122,.7);margin-top:3px}
+
+/* ── CERTIFICATE CARD inside result ── */
+.cert-card{margin:0;padding:20px;background:linear-gradient(160deg,rgba(212,168,67,.04) 0%,transparent 60%);border-bottom:1px solid var(--br)}
+
+/* Cert number badge */
+.cert-num{display:inline-flex;align-items:center;gap:7px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.2);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+.cert-num-label{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1px}
+.cert-num-val{font-family:monospace;font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.5px}
+
+/* The big "ISSUED BY → ISSUED TO" visual block */
+.issuance{display:grid;grid-template-columns:1fr 40px 1fr;gap:0;align-items:center;margin-bottom:16px}
+.iss-box{text-align:center;padding:14px 12px;border-radius:10px}
+.iss-box.issuer{background:rgba(77,141,224,.07);border:1px solid rgba(77,141,224,.15)}
+.iss-box.recipient{background:rgba(212,168,67,.07);border:1px solid rgba(212,168,67,.18)}
+.iss-label{font-size:9px;text-transform:uppercase;letter-spacing:1.8px;color:var(--mu);margin-bottom:6px;font-weight:600}
+.iss-name{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;line-height:1.3;word-break:break-word}
+.iss-box.issuer .iss-name{color:var(--blue)}
+.iss-box.recipient .iss-name{color:var(--gold)}
+.iss-arrow{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.iss-arrow-line{width:2px;height:20px;background:linear-gradient(to bottom,var(--blue),var(--gold));border-radius:1px;margin:0 auto}
+.iss-arrow-icon{font-size:18px;color:var(--mu)}
+
+/* Details grid below */
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.det-item{background:rgba(255,255,255,.02);border:1px solid var(--br);border-radius:8px;padding:10px 12px}
+.det-label{font-size:9.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mu);margin-bottom:4px;font-weight:600}
+.det-val{font-size:13px;font-weight:600;color:var(--tx);line-height:1.3}
+.det-val.course{color:var(--gold2)}
+
+/* Verified stamp footer */
+.stamp{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;font-size:10.5px;color:var(--mu)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── RESULT INVALID ── */
+.res-invalid{display:none;margin-top:16px;border-radius:14px;overflow:hidden;border:1px solid rgba(224,85,85,.2);background:rgba(224,85,85,.05)}
+.res-invalid .res-banner{background:rgba(224,85,85,.08);border-bottom:1px solid rgba(224,85,85,.12)}
+.err-body{padding:16px 20px}
+
+/* ── Hint ── */
+.hint{font-size:11px;color:var(--mu);text-align:center;margin-top:14px;line-height:1.8;padding:10px 14px;background:rgba(212,168,67,.03);border:1px solid rgba(212,168,67,.07);border-radius:8px}
+.back{text-align:center;margin-top:16px;font-size:11.5px;color:var(--mu)}
+.back a{color:var(--gold);text-decoration:none}.back a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-name">CertForge Pro</div>
+    <div class="logo-sub">Certificate Verification Portal</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔍 Verify Certificate Authenticity</div>
+    <div class="card-sub">Enter the certificate number or scan the QR code to confirm authenticity</div>
+    <div class="inp-row">
+      <input type="text" id="certInput" placeholder="CERT-20260228-0001"
+             oninput="onInput()" onkeydown="if(event.key==='Enter')doVerify()">
+      <button class="btn" id="vbtn" onclick="doVerify()">Verify →</button>
+    </div>
+    <div class="loading" id="loading">
+      <span class="spin"></span>Checking certificate database…
+    </div>
+  </div>
+
+  <!-- ── VALID RESULT ── -->
+  <div class="res-valid" id="res-valid">
+    <div class="res-banner">
+      <div class="res-check">✅</div>
+      <div>
+        <div class="res-banner-title">Certificate Verified — Authentic</div>
+        <div class="res-banner-sub">This certificate is recorded in the official CertForge database</div>
+      </div>
+    </div>
+
+    <div class="cert-card">
+      <!-- Cert number badge -->
+      <div class="cert-num">
+        <span class="cert-num-label">Certificate No.</span>
+        <span class="cert-num-val" id="v-certnum">—</span>
+      </div>
+
+      <!-- Issued By → Issued To visual -->
+      <div class="issuance">
+        <div class="iss-box issuer">
+          <div class="iss-label">Issued By</div>
+          <div class="iss-name" id="v-issuedby">—</div>
+        </div>
+        <div class="iss-arrow">
+          <div class="iss-arrow-line"></div>
+          <div class="iss-arrow-icon">🎓</div>
+          <div class="iss-arrow-line"></div>
+        </div>
+        <div class="iss-box recipient">
+          <div class="iss-label">Issued To</div>
+          <div class="iss-name" id="v-issuedto">—</div>
+        </div>
+      </div>
+
+      <!-- Details grid -->
+      <div class="det-grid" id="v-detgrid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <div class="stamp">
+      <div class="dot"></div>
+      <span id="v-timestamp">Verified against CertForge database</span>
+    </div>
+  </div>
+
+  <!-- ── INVALID RESULT ── -->
+  <div class="res-invalid" id="res-invalid">
+    <div class="res-banner">
+      <div class="res-check" style="background:linear-gradient(135deg,#e05555,#a03030)">❌</div>
+      <div>
+        <div class="res-banner-title" style="color:var(--red)">Certificate Not Found</div>
+        <div class="res-banner-sub" style="color:rgba(224,85,85,.7)" id="inv-msg">This certificate number was not found in the database.</div>
+      </div>
+    </div>
+    <div class="err-body">
+      <div style="font-size:12px;color:var(--mu);line-height:1.9">
+        <strong style="color:var(--tx)">Possible reasons:</strong><br>
+        • Certificate number typed incorrectly — check for typos<br>
+        • Certificate was generated before the verification system was enabled<br>
+        • This certificate was not issued through CertForge Pro
+      </div>
+      <div style="margin-top:10px;font-size:11.5px;color:var(--mu)">
+        Searched: <code style="color:var(--gold);font-size:12px" id="inv-searched">—</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">
+    📋 The certificate number is printed in the <strong>top-right corner</strong> of every certificate.<br>
+    📱 Scanning the QR code on the certificate opens this page automatically.
+  </div>
+  <div class="back"><a href="/login">← CertForge Pro</a></div>
+</div>
+
+<script>
+// ── Auto-verify if cert number in URL (?cert=CERT-xxx) ────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const cert = new URLSearchParams(window.location.search).get('cert');
+  if (cert) {
+    document.getElementById('certInput').value = cert.toUpperCase();
+    doVerify();
+  }
+});
+
+function onInput() {
+  const inp = document.getElementById('certInput');
+  const pos = inp.selectionStart;
+  inp.value = inp.value.toUpperCase();
+  inp.setSelectionRange(pos, pos);
+  document.getElementById('res-valid').style.display = 'none';
+  document.getElementById('res-invalid').style.display = 'none';
+}
+
+async function doVerify() {
+  const raw = document.getElementById('certInput').value.trim().toUpperCase();
+  if (!raw) { flashInput('Enter a certificate number'); return; }
+
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('res-valid').style.display = 'none';
+  document.getElementById('res-invalid').style.display = 'none';
+  document.getElementById('vbtn').disabled = true;
+
+  try {
+    const res = await fetch(`/api/certificates/verify/${encodeURIComponent(raw)}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
+    showResult(d, raw);
+  } catch (e) {
+    showResult({ valid: false, message: 'Network error: ' + e.message }, raw);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('vbtn').disabled = false;
+  }
+}
+
+function showResult(d, certNum) {
+  if (d.valid) {
+    // ── Fill in Issued By / Issued To ──────────────────────────────────
+    document.getElementById('v-certnum').textContent = d.certificateNumber || certNum;
+    document.getElementById('v-issuedby').textContent = d.issuedBy || 'MSEC ';
+    document.getElementById('v-issuedto').textContent = d.issuedTo || d.recipientName || '—';
+
+    // ── Build details grid ─────────────────────────────────────────────
+    const grid = document.getElementById('v-detgrid');
+    grid.innerHTML = '';
+    const items = [];
+
+    if (d.courseName) {
+      items.push({ label: 'Course / Programme', val: d.courseName, cls: 'course' });
+    }
+    if (d.issuedAt) {
+      const dt = new Date(d.issuedAt);
+      const formatted = dt.toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+      items.push({ label: 'Date of Issue', val: formatted });
+    }
+    if (d.certificateNumber) {
+      items.push({ label: 'Reference No.', val: d.certificateNumber });
+    }
+
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'det-item';
+      div.innerHTML = `<div class="det-label">${escHtml(item.label)}</div><div class="det-val ${item.cls||''}">${escHtml(item.val)}</div>`;
+      grid.appendChild(div);
+    });
+
+    // If course and date both present, make it single-column full width
+    if (items.length === 1) {
+      grid.style.gridTemplateColumns = '1fr';
+    } else {
+      grid.style.gridTemplateColumns = '1fr 1fr';
+    }
+
+    // ── Timestamp ──────────────────────────────────────────────────────
+    const now = new Date().toLocaleString('en-IN', {
+      day:'2-digit', month:'short', year:'numeric',
+      hour:'2-digit', minute:'2-digit'
+    });
+    document.getElementById('v-timestamp').textContent =
+      `Verified against CertForge database · ${now}`;
+
+    document.getElementById('res-valid').style.display = 'block';
+
+  } else {
+    document.getElementById('inv-msg').textContent =
+      d.message || 'This certificate number was not found in the database.';
+    document.getElementById('inv-searched').textContent = certNum;
+    document.getElementById('res-invalid').style.display = 'block';
+  }
+}
+
+function flashInput(msg) {
+  const inp = document.getElementById('certInput');
+  inp.style.borderColor = 'rgba(224,85,85,.7)';
+  inp.placeholder = msg;
+  setTimeout(() => { inp.style.borderColor = ''; inp.placeholder = 'CERT-20260228-0001'; }, 2200);
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
